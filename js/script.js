@@ -55,7 +55,7 @@ const displayModal = (profileIndex, data) => {
                     <p class="modal-text">${user.email}</p>
                     <p class="modal-text cap">${user.location.city}</p>
                     <hr>
-                    <p class="modal-text">${user.cell}</p>
+                    <p class="modal-text">${user.phone}</p>
                     <p class="modal-text">${user.location.state}, ${user.location.postcode}</p>
                     <p class="modal-text">Birthday: ${user.dob.date.substring(0,10)}</p>
             </div>
