@@ -10,7 +10,7 @@ const searchHTML = `
 </form>
 `;
 
-document.querySelector('.search-container').innerHTML = searchHTML;
+$('.search-container').append(searchHTML);
 
 
 // create cards html
@@ -34,17 +34,16 @@ function cards(allUsers) {
         `;
     });
 
-// Displays model window when specific card is clicked.
-document.querySelectorAll('.card').forEach(profile => {
-    profile.addEventListener('click', (e) => {
-        displayModal(parseInt(e.currentTarget.id), allUsers);
-    })
-})
+    // Displays model window when specific card is clicked.
+    $('.card').click( e => {
+            displayModal(parseInt(e.currentTarget.id), allUsers);
+        })
 }
 
 // function for displaying a card's modal window
 const displayModal = (profileIndex, data) => {
         var user = data[profileIndex];
+        $('.modal-container').remove();
         let modalContainer = document.createElement('div');
         modalContainer.className = 'modal-container';
         modalContainer.innerHTML = 
@@ -65,97 +64,74 @@ const displayModal = (profileIndex, data) => {
                 <button type="button" id="modal-next" class="modal-next btn">Next</button>
             </div>`
 
-        document.querySelector('body').appendChild(modalContainer);
+        $('body').append(modalContainer);
 
         // Remove modal window when 'X' button is clicked.
-        document.querySelector('.modal-close-btn').addEventListener('click', () => {
-            document.querySelector('body').removeChild(document.querySelector('.modal-container'));
+        $('.modal-close-btn').click( e => {
+            let parentModal = $(e.target).parents('.modal-container');
+            $(parentModal).hide();
         })
 
         // Target 'Next' and 'Prev' buttons on modal window.
-        const buttons = document.querySelectorAll('.modal-btn-container button');
+        const buttons = $('.modal-btn-container button');
 
         // hides (prev/next) buttons depending if the selected card is the first/last
         addOrRemoveButtons(profileIndex, data.length, buttons);
 
         // Click listener for each button, displays either next or previous modal window.
-        buttons.forEach(button => {
-            button.addEventListener('click', e => {
+        buttons.click( e => {
                 addOrRemoveButtons(profileIndex, data.length, buttons);
 
-                document.querySelector('body').removeChild(modalContainer);
+                $('body').remove(modalContainer);
                 if(e.target.textContent === 'Next'){
                     displayModal(profileIndex + 1, data);
                 } else if (e.target.textContent === 'Prev'){
                     displayModal(profileIndex - 1, data);
                 }
             })
-        })
 }
 
 // Function to filter profiles depending on search bar value.
 const filterProfiles = (searchInput, data) => {
         filteredProfiles = [];
         // If a modal window exists, remove it.
-        if(document.querySelector('.modal-container')){
-            document.querySelector('body').removeChild('.modal-container');
+        if($('.modal-container')){
+            $('body').remove('.modal-container');
         }
-        console.log(searchInput);
         data.forEach(profile => {
-            console.log(profile.name.first);
             if (profile.name.first.toLowerCase().includes(searchInput) || 
                     profile.name.last.toLowerCase().includes(searchInput)){
                 filteredProfiles.push(profile);
             }
         })
-        displayOrRemoveErrorMessage(filteredProfiles);
-        console.log(filteredProfiles);
         cards(filteredProfiles);
 }
 
 
 // Function to hide or show 'Next' or 'Prev' buttons depending on displayed profile.
 const addOrRemoveButtons = (displayedProfile, n_users, buttons) => {
-    buttons[0].style.visibility = 'visible';
-    buttons[1].style.visibility = 'visible';
-
+    $(buttons[0]).show();
+    $(buttons[1]).show();
     if(displayedProfile === 0 ){
-        buttons[0].style.visibility = 'hidden';
+        $(buttons[0]).hide();
     } 
     if (displayedProfile === n_users -1){
-        buttons[1].style.visibility = 'hidden';
+        $(buttons[1]).hide();
     } 
 }
 
-// Function to check if no search matches are found. Displays error message if so, removes error message (if it exists) if not.
-const displayOrRemoveErrorMessage = results => {
-        if(results.length === 0) {
-            if(document.querySelector('.errorMessage') === null){
-                let noResults = document.createElement('p');
-                noResults.className = 'errorMessage';
-                noResults.textContent = 'No results found. Try again.';
-                document.querySelector('body').insertBefore(noResults, gallery);
-            }      
-        } else {
-            if(document.querySelector('.errorMessage') !== null){
-                document.querySelector('.errorMessage').style.display = 'none';
-            }       
-        }
-}
 
 // ------------------------------------ MAIN ------------------------------------------------
 // getting random user data
-fetch('https://randomuser.me/api/?results=12&inc=name,location,email,picture,cell,dob&nat=au&')
-.then(data => data.json())
-.then(data => {
+$.getJSON('https://randomuser.me/api/?results=12&nat=us,gb&inc=picture,name,email,location,dob,phone', 
+data => {
     // Generate a profile card for each result.
     cards(data.results);
     
     // search to filter profiles.
-    document.getElementById('search-input').addEventListener('keyup', e => {
+    $('.search-input').keyup( e => {
         e.preventDefault();
         filterProfiles(e.target.value.toLowerCase(), data.results);
     })
 })
-.catch(error => console.log('Looks like there was a problem', error))
 
